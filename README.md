@@ -23,10 +23,10 @@ into a standalone, maximally readable demo.
               ├── GET /api/classes  ──▶ PsiHelper.listClasses()   GET /api/source
               ├── GET /api/source   ──▶ PsiHelper.getSourceWithLine()   │
               ├── POST /api/navigate ──▶ PsiHelper.navigate()     source pane (shiki)
-              ├── WS  /ws/filter    ◀── broadcastFilter()               │ click class name
+              ├── WS  /ws/filter    ──▶ web (App.vue listens, filter.value updated)
               └── GET /             ──▶ classpath:/web/ (Vite)    POST /api/navigate
 
-    BrowserWindow (JCEF — must be Java, known IntelliJ/Kotlin bug)
+    BrowserWindow (JCEF — must be Java; reference impl always written in Java for this reason)
       loads http://localhost:{port}/
       retry loop: CEF silently drops the first loadURL call
 

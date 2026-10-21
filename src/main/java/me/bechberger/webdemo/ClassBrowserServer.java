@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  *   <li>{@code GET /api/classes?filter=} — list matching project classes with public methods</li>
  *   <li>{@code GET /api/source?fqn=&amp;method=} — return source text and target line number</li>
  *   <li>{@code POST /api/navigate?fqn=} — jump editor to the class</li>
- *   <li>{@code WS /ws/filter} — receive filter strings pushed from the IDE</li>
+ *   <li>{@code WS /ws/filter} — push filter strings to connected web clients (IDE→web)</li>
  *   <li>{@code GET /} — serve the Vite-built SPA from {@code classpath:/web/}</li>
  * </ul>
  *
