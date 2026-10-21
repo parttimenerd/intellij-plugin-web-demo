@@ -1,6 +1,5 @@
 package me.bechberger.webdemo;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import io.javalin.Javalin;
@@ -10,7 +9,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.logging.Logger;
 
 /**
  * Javalin HTTP/WebSocket server that backs the Class Browser tool window.
@@ -30,14 +28,11 @@ import java.util.logging.Logger;
 public class ClassBrowserServer implements Disposable {
 
     private static final int MAX_RESULTS = 50;
-    private static final Logger LOG = Logger.getLogger(ClassBrowserServer.class.getName());
 
     private final Project project;
     private final Javalin app;
     private final int port;
     private final Set<WsContext> clients = new CopyOnWriteArraySet<>();
-    private final ObjectMapper json = new ObjectMapper();
-    private volatile boolean running = false;
 
     public ClassBrowserServer(Project project) {
         this.project = project;
@@ -52,11 +47,9 @@ public class ClassBrowserServer implements Disposable {
                 config.staticFiles.add("/web", io.javalin.http.staticfiles.Location.CLASSPATH)
             ).start(port);
             registerRoutes(); // must be inside the classloader swap — Jetty handler setup needs it
-            running = true;
         } finally {
             Thread.currentThread().setContextClassLoader(saved);
         }
-        LOG.info("Class Browser running on port " + port);
     }
 
     public static ClassBrowserServer getInstance(Project project) {
@@ -65,12 +58,8 @@ public class ClassBrowserServer implements Disposable {
 
     public int getPort() { return port; }
 
-    public boolean isRunning() { return running; }
-
-    public void broadcastFilter(String text) {
-        String msg;
-        try { msg = json.writeValueAsString(Map.of("filter", text)); }
-        catch (Exception e) { return; }
+    public void broadcastFilter(String fqn) {
+        String msg = "{\"filter\":\"" + fqn.replace("\"", "\\\"") + "\"}";
         for (WsContext ctx : clients) {
             try { ctx.send(msg); } catch (Exception ignored) {}
         }
@@ -79,15 +68,13 @@ public class ClassBrowserServer implements Disposable {
     private void registerRoutes() {
         app.get("/api/classes", ctx -> {
             String filter = Objects.requireNonNullElse(ctx.queryParam("filter"), "");
-            List<PsiHelper.ClassInfo> classes = PsiHelper.listClasses(project, filter, MAX_RESULTS);
-            ctx.json(classes);
+            ctx.json(PsiHelper.listClasses(project, filter, MAX_RESULTS));
         });
 
         app.get("/api/source", ctx -> {
             String fqn = ctx.queryParam("fqn");
             if (fqn == null) { ctx.status(400); return; }
-            String method = ctx.queryParam("method");
-            PsiHelper.SourceResult result = PsiHelper.getSourceWithLine(project, fqn, method);
+            PsiHelper.SourceResult result = PsiHelper.getSourceWithLine(project, fqn, ctx.queryParam("method"));
             if (result == null) { ctx.status(404).result("Source not available"); return; }
             ctx.json(Map.of("source", result.source(), "line", result.line()));
         });
@@ -111,5 +98,5 @@ public class ClassBrowserServer implements Disposable {
     }
 
     @Override
-    public void dispose() { running = false; app.stop(); }
+    public void dispose() { app.stop(); }
 }
