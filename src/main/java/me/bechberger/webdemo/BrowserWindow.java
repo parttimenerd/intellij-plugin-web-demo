@@ -8,8 +8,9 @@ import com.intellij.ui.jcef.JBCefBrowserBuilder;
 import javax.swing.*;
 
 /**
- * Wraps JBCefBrowser. Must be Java — IntelliJ JCEF does not initialise
- * correctly from Kotlin (known platform bug).
+ * Wraps JBCefBrowser. Must be Java — IntelliJ JCEF does not initialise correctly from Kotlin
+ * (known platform bug; see WebViewWindow.java in the reference implementation:
+ * https://github.com/parttimenerd/intellij-profiler-plugin/blob/main/src/main/java/me/bechberger/jfrplugin/editor/WebViewWindow.java).
  */
 public class BrowserWindow implements Disposable {
 
