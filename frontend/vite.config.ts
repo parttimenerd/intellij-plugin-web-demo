@@ -5,7 +5,7 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [vue()],
   build: {
-    outDir: resolve(__dirname, '../build/frontend-dist/web'),
+    outDir: resolve(import.meta.dirname, '../build/frontend-dist/web'),
     emptyOutDir: true,
   },
   server: {
