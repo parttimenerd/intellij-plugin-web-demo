@@ -1,0 +1,32 @@
+<idea-plugin>
+    <id>me.bechberger.webdemo</id>
+    <name>IntelliJ Web Demo</name>
+    <vendor email="me@mostlynerdless.de">Johannes Bechberger</vendor>
+    <idea-version since-build="252"/>
+
+    <depends>com.intellij.modules.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService
+            serviceImplementation="me.bechberger.webdemo.ClassBrowserServer"/>
+        <toolWindow
+            id="Class Browser"
+            anchor="right"
+            factoryClass="me.bechberger.webdemo.ClassBrowserToolWindowFactory"/>
+    </extensions>
+
+    <actions>
+        <action id="me.bechberger.webdemo.OpenBrowser"
+                class="me.bechberger.webdemo.OpenBrowserAction"
+                text="Open Class Browser"
+                description="Open the embedded class browser web app">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="me.bechberger.webdemo.SetFilter"
+                class="me.bechberger.webdemo.SetFilterAction"
+                text="Browse This Class"
+                description="Send this class to the Class Browser">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
