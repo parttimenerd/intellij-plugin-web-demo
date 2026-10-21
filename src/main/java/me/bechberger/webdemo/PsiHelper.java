@@ -26,7 +26,6 @@ public class PsiHelper {
 
     /** Returns up to {@code limit} classes whose FQN or any method name contains {@code filter}. */
     public static List<ClassInfo> listClasses(Project project, String filter, int limit) {
-        if (filter.length() < 2) return List.of();
         String lower = filter.toLowerCase();
         return ApplicationManager.getApplication().runReadAction((Computable<List<ClassInfo>>) () -> {
             List<ClassInfo> result = new ArrayList<>();
@@ -97,6 +96,7 @@ public class PsiHelper {
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private static boolean matches(PsiClass klass, String lower) {
+        if (lower.isEmpty()) return true;
         String fqn = klass.getQualifiedName();
         if (fqn == null) return false;
         if (fqn.toLowerCase().contains(lower)) return true;

@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick } from 'vue'
 import { codeToHtml } from 'shiki'
-
-interface ClassInfo {
-  fqn: string
-  simpleName: string
-  methods: string[]
-}
+import { type ClassInfo, buildClassUrl, buildSourceUrl, buildNavigateUrl, scrollTopForLine, parseWsMessage } from './classBrowser'
 
 const filter   = ref('')
 const classes  = ref<ClassInfo[]>([])
@@ -21,45 +16,40 @@ watch(filter, (val) => {
 })
 
 async function fetchClasses(val: string) {
-  if (val.length < 2) { classes.value = []; return }
-  const res = await fetch(`/api/classes?filter=${encodeURIComponent(val)}`)
+  const res = await fetch(buildClassUrl(val))
   classes.value = await res.json()
 }
 
 async function showSource(fqn: string, method?: string) {
-  const url = method
-    ? `/api/source?fqn=${encodeURIComponent(fqn)}&method=${encodeURIComponent(method)}`
-    : `/api/source?fqn=${encodeURIComponent(fqn)}`
-  const res = await fetch(url)
+  const res = await fetch(buildSourceUrl(fqn, method))
   if (!res.ok) { source.value = '// source not available'; return }
   const data = await res.json()
   // shiki renders fully self-contained HTML with inline styles — no CSS import needed
   source.value = await codeToHtml(data.source, { lang: 'java', theme: 'github-light' })
   await nextTick()
-  scrollToLine(data.line)
-}
-
-function scrollToLine(line: number) {
-  if (!sourceEl.value) return
-  const lineHeight = parseFloat(getComputedStyle(sourceEl.value).lineHeight) || 20
-  sourceEl.value.scrollTop = (line - 1) * lineHeight - 80
+  if (sourceEl.value)
+    sourceEl.value.scrollTop = scrollTopForLine(data.line, parseFloat(getComputedStyle(sourceEl.value).lineHeight) || 20)
 }
 
 function navigate(fqn: string) {
-  fetch(`/api/navigate?fqn=${encodeURIComponent(fqn)}`, { method: 'POST' })
+  fetch(buildNavigateUrl(fqn), { method: 'POST' })
     .then(() => showSource(fqn))
 }
 
 onMounted(() => {
+  fetchClasses('')
   const ws = new WebSocket(`ws://${location.host}/ws/filter`)
-  ws.onmessage = (e) => { filter.value = JSON.parse(e.data).filter }
+  ws.onmessage = (e) => {
+    const f = parseWsMessage(e.data)
+    if (f !== null) filter.value = f
+  }
 })
 </script>
 
 <template>
   <div class="layout">
     <div class="sidebar">
-      <input v-model="filter" class="search" placeholder="Filter classes or methods (min 2 chars)" />
+      <input v-model="filter" class="search" placeholder="Filter classes or methods…" />
 
       <div class="class-list">
         <div v-for="c in classes" :key="c.fqn" class="class-box">
