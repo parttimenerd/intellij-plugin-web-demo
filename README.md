@@ -72,7 +72,6 @@ with `implementation(...)` in `build.gradle.kts`:
 ```kotlin
 implementation("io.javalin:javalin:6.3.0")
 implementation("org.slf4j:slf4j-simple:2.0.13")
-implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
 ```
 
 The frontend (Vite build output) is added to the main classpath via `sourceSets.named("main") { resources.srcDir(...) }`,

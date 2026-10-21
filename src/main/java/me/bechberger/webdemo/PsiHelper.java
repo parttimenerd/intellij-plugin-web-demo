@@ -7,9 +7,10 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AllClassesSearch;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtilBase;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Static helpers for PSI operations used by the Class Browser.
@@ -81,15 +82,14 @@ public class PsiHelper {
     /** Returns the FQN of the class at the editor caret, or null if none. */
     public static String classNameAtCaret(com.intellij.openapi.editor.Editor editor, Project project) {
         return ApplicationManager.getApplication().runReadAction((Computable<String>) () -> {
-            PsiFile file = com.intellij.psi.util.PsiUtilBase.getPsiFileInEditor(editor, project);
+            PsiFile file = PsiUtilBase.getPsiFileInEditor(editor, project);
             if (file == null) return null;
             int offset = editor.getCaretModel().getOffset();
             PsiElement element = file.findElementAt(offset);
-            PsiClass klass = com.intellij.psi.util.PsiTreeUtil.getParentOfType(element, PsiClass.class);
+            PsiClass klass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
             if (klass != null) return klass.getQualifiedName();
             // Also handle import statements
-            PsiImportStatement imp = com.intellij.psi.util.PsiTreeUtil
-                .getParentOfType(element, PsiImportStatement.class);
+            PsiImportStatement imp = PsiTreeUtil.getParentOfType(element, PsiImportStatement.class);
             return imp != null ? imp.getQualifiedName() : null;
         });
     }
@@ -111,7 +111,7 @@ public class PsiHelper {
             .filter(m -> m.hasModifierProperty(PsiModifier.PUBLIC))
             .map(PsiMethod::getName)
             .distinct()
-            .collect(Collectors.toList());
+            .toList();
         return new ClassInfo(fqn, simple, methods);
     }
 
