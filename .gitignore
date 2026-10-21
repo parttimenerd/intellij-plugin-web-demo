@@ -1,6 +1,17 @@
+# Gradle
 .gradle/
 build/
+
+# IntelliJ
 .idea/
 *.iml
+.intellijPlatform/
+
+# Frontend
 frontend/node_modules/
 frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# OS
+.DS_Store
