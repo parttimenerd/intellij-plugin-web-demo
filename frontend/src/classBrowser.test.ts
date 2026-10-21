@@ -47,16 +47,19 @@ describe('scrollTopForLine', () => {
 })
 
 describe('parseWsMessage', () => {
-  it('returns filter string from valid message', () => {
-    expect(parseWsMessage('{"filter":"com.example.Foo"}')).toBe('com.example.Foo')
+  it('returns filter message from valid filter payload', () => {
+    expect(parseWsMessage('{"filter":"com.example.Foo"}')).toEqual({ type: 'filter', filter: 'com.example.Foo' })
   })
-  it('returns empty string for empty filter', () => {
-    expect(parseWsMessage('{"filter":""}')).toBe('')
+  it('returns filter message with empty string', () => {
+    expect(parseWsMessage('{"filter":""}')).toEqual({ type: 'filter', filter: '' })
+  })
+  it('returns reload message', () => {
+    expect(parseWsMessage('{"reload":true}')).toEqual({ type: 'reload' })
   })
   it('returns null for invalid JSON', () => {
     expect(parseWsMessage('not json')).toBeNull()
   })
-  it('returns null if filter key missing', () => {
+  it('returns null if no recognized key', () => {
     expect(parseWsMessage('{"other":"value"}')).toBeNull()
   })
   it('returns null if filter is not a string', () => {

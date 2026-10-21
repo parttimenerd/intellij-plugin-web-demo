@@ -3,16 +3,21 @@ import { ref, watch, onMounted, nextTick } from 'vue'
 import { codeToHtml } from 'shiki'
 import { type ClassInfo, buildClassUrl, buildSourceUrl, buildNavigateUrl, scrollTopForLine, parseWsMessage } from './classBrowser'
 
-const filter   = ref('')
-const classes  = ref<ClassInfo[]>([])
-const source   = ref('// click a class or method')
-const sourceEl = ref<HTMLDivElement | null>(null)
+const filter    = ref('')
+const classes   = ref<ClassInfo[]>([])
+const source    = ref('// click a class or method')
+const sourceEl  = ref<HTMLDivElement | null>(null)
+const theme     = ref<'github-light' | 'github-dark'>('github-light')
+
+// track current source view for reload
+let currentFqn: string | null = null
+let currentMethod: string | undefined
 
 // Debounced fetch on filter change
-let timer: ReturnType<typeof setTimeout>
+let filterTimer: ReturnType<typeof setTimeout>
 watch(filter, (val) => {
-  clearTimeout(timer)
-  timer = setTimeout(() => fetchClasses(val), 300)
+  clearTimeout(filterTimer)
+  filterTimer = setTimeout(() => fetchClasses(val), 300)
 })
 
 async function fetchClasses(val: string) {
@@ -21,11 +26,12 @@ async function fetchClasses(val: string) {
 }
 
 async function showSource(fqn: string, method?: string) {
+  currentFqn = fqn
+  currentMethod = method
   const res = await fetch(buildSourceUrl(fqn, method))
   if (!res.ok) { source.value = '// source not available'; return }
   const data = await res.json()
-  // shiki renders fully self-contained HTML with inline styles — no CSS import needed
-  source.value = await codeToHtml(data.source, { lang: 'java', theme: 'github-light' })
+  source.value = await codeToHtml(data.source, { lang: 'java', theme: theme.value })
   await nextTick()
   if (sourceEl.value)
     sourceEl.value.scrollTop = scrollTopForLine(data.line, parseFloat(getComputedStyle(sourceEl.value).lineHeight) || 20)
@@ -36,18 +42,31 @@ function navigate(fqn: string) {
     .then(() => showSource(fqn))
 }
 
-onMounted(() => {
+// reload debounce — PSI fires many events per keystroke; coalesce on the frontend too
+let reloadTimer: ReturnType<typeof setTimeout>
+function scheduleReload() {
+  clearTimeout(reloadTimer)
+  reloadTimer = setTimeout(() => {
+    fetchClasses(filter.value)
+    if (currentFqn) showSource(currentFqn, currentMethod)
+  }, 300)
+}
+
+onMounted(async () => {
+  const t = await fetch('/api/theme').then(r => r.text())
+  theme.value = t === 'dark' ? 'github-dark' : 'github-light'
   fetchClasses('')
   const ws = new WebSocket(`ws://${location.host}/ws/filter`)
   ws.onmessage = (e) => {
-    const f = parseWsMessage(e.data)
-    if (f !== null) filter.value = f
+    const msg = parseWsMessage(e.data)
+    if (msg?.type === 'filter') filter.value = msg.filter
+    else if (msg?.type === 'reload') scheduleReload()
   }
 })
 </script>
 
 <template>
-  <div class="layout">
+  <div class="layout" :class="theme === 'github-dark' ? 'dark' : 'light'">
     <div class="sidebar">
       <input v-model="filter" class="search" placeholder="Filter classes or methods…" />
 
@@ -83,4 +102,13 @@ onMounted(() => {
 .source     { flex: 1; overflow: auto; padding: 0; font-size: 13px; }
 /* shiki wraps output in <pre> with inline styles — let it fill the pane */
 .source :deep(pre) { margin: 0; padding: 16px; min-height: 100%; line-height: 1.5; }
+
+/* dark sidebar */
+.dark .sidebar  { background: #1e1e1e; border-right-color: #333; }
+.dark .search   { background: #1e1e1e; color: #ccc; border-bottom-color: #333; }
+.dark .class-box { border-bottom-color: #2a2a2a; }
+.dark .class-name { color: #6db3f2; }
+.dark .package  { color: #666; }
+.dark .chip     { background: #2d2d2d; color: #ccc; }
+.dark .chip:hover { background: #3a3a5a; }
 </style>

@@ -21,10 +21,17 @@ export function scrollTopForLine(line: number, lineHeight: number, offset = 80):
   return (line - 1) * lineHeight - offset
 }
 
-export function parseWsMessage(data: string): string | null {
+export type WsMessage =
+  | { type: 'filter'; filter: string }
+  | { type: 'reload' }
+  | null
+
+export function parseWsMessage(data: string): WsMessage {
   try {
     const msg = JSON.parse(data)
-    return typeof msg.filter === 'string' ? msg.filter : null
+    if (typeof msg.filter === 'string') return { type: 'filter', filter: msg.filter }
+    if (msg.reload === true) return { type: 'reload' }
+    return null
   } catch {
     return null
   }
