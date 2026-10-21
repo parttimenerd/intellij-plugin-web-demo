@@ -21,12 +21,6 @@
     </extensions>
 
     <actions>
-        <action id="me.bechberger.webdemo.OpenBrowser"
-                class="me.bechberger.webdemo.OpenBrowserAction"
-                text="Open Class Browser"
-                description="Open the embedded class browser web app">
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-        </action>
         <action id="me.bechberger.webdemo.SetFilter"
                 class="me.bechberger.webdemo.SetFilterAction"
                 text="Browse This Class"

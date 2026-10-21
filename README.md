@@ -46,7 +46,6 @@ into a standalone, maximally readable demo.
 | `BrowserWindow.java` | JCEF wrapper with CEF retry loop |
 | `ClassBrowserToolWindowFactory.java` | Wires server port → BrowserWindow → ToolWindow |
 | `PsiHelper.java` | All PSI: list classes+methods, source, line numbers, navigate, caret class |
-| `OpenBrowserAction.java` | Tools menu → show tool window |
 | `SetFilterAction.java` | Editor right-click → broadcast filter to frontend |
 | `App.vue` | Entire frontend: search, class boxes, source pane, WS |
 
@@ -58,7 +57,7 @@ into a standalone, maximally readable demo.
 
 Opens a sandbox IntelliJ. Open any Java project inside it, then:
 
-1. **Tools → Open Class Browser** — browser tab opens on the right
+1. **View → Tool Windows → Class Browser** — browser tab opens on the right
 2. Type at least 2 characters in the search bar → classes appear
 3. Click a method chip → source appears with the method scrolled into view
 4. Click a class name → editor jumps to the class
