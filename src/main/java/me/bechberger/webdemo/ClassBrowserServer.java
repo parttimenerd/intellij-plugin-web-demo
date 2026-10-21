@@ -13,10 +13,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Javalin HTTP/WebSocket server that backs the Class Browser tool window.
@@ -42,8 +38,8 @@ public class ClassBrowserServer implements Disposable {
     private final Javalin app;
     private final int port;
     private final Set<WsContext> clients = new CopyOnWriteArraySet<>();
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private volatile ScheduledFuture<?> pendingReload;
+    private final Timer reloadTimer = new Timer("class-browser-reload", true);
+    private volatile TimerTask pendingReload;
 
     public ClassBrowserServer(Project project) {
         this.project = project;
@@ -126,13 +122,14 @@ public class ClassBrowserServer implements Disposable {
     }
 
     private void scheduleReload() {
-        if (pendingReload != null) pendingReload.cancel(false);
-        pendingReload = scheduler.schedule(this::broadcastReload, 500, TimeUnit.MILLISECONDS);
+        if (pendingReload != null) pendingReload.cancel();
+        pendingReload = new TimerTask() { public void run() { broadcastReload(); } };
+        reloadTimer.schedule(pendingReload, 500);
     }
 
     @Override
     public void dispose() {
-        scheduler.shutdownNow();
+        reloadTimer.cancel();
         app.stop();
     }
 }
