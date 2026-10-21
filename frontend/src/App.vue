@@ -22,7 +22,7 @@ watch(filter, (val) => {
 
 async function fetchClasses(val: string) {
   const res = await fetch(buildClassUrl(val))
-  classes.value = await res.json()
+  if (res.ok) classes.value = await res.json()
 }
 
 async function showSource(fqn: string, method?: string) {
@@ -52,16 +52,21 @@ function scheduleReload() {
   }, 300)
 }
 
-onMounted(async () => {
-  const t = await fetch('/api/theme').then(r => r.text())
-  theme.value = t === 'dark' ? 'github-dark' : 'github-light'
-  fetchClasses('')
+function connectWs() {
   const ws = new WebSocket(`ws://${location.host}/ws/filter`)
   ws.onmessage = (e) => {
     const msg = parseWsMessage(e.data)
     if (msg?.type === 'filter') filter.value = msg.filter
     else if (msg?.type === 'reload') scheduleReload()
   }
+  ws.onclose = () => setTimeout(connectWs, 2000)
+}
+
+onMounted(async () => {
+  const t = await fetch('/api/theme').then(r => r.text())
+  theme.value = t === 'dark' ? 'github-dark' : 'github-light'
+  fetchClasses('')
+  connectWs()
 })
 </script>
 

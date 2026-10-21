@@ -96,9 +96,9 @@ public class PsiHelper {
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private static boolean matches(PsiClass klass, String lower) {
+        if (klass.getQualifiedName() == null) return false; // skip anonymous/local classes
         if (lower.isEmpty()) return true;
         String fqn = klass.getQualifiedName();
-        if (fqn == null) return false;
         if (fqn.toLowerCase().contains(lower)) return true;
         return Arrays.stream(klass.getMethods())
             .anyMatch(m -> m.getName().toLowerCase().contains(lower));

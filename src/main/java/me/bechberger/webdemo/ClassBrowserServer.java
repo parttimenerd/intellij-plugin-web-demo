@@ -113,6 +113,7 @@ public class ClassBrowserServer implements Disposable {
         app.ws("/ws/filter", ws -> {
             ws.onConnect(clients::add);
             ws.onClose(clients::remove);
+            ws.onError(ctx -> clients.remove(ctx));
         });
     }
 

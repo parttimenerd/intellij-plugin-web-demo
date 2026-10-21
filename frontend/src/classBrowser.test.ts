@@ -20,8 +20,8 @@ describe('buildSourceUrl', () => {
   it('with method appends method param', () => {
     expect(buildSourceUrl('com.example.Foo', 'bar')).toBe('/api/source?fqn=com.example.Foo&method=bar')
   })
-  it('encodes fqn dots (no encoding needed — dots are safe)', () => {
-    expect(buildSourceUrl('com.example.Foo')).toContain('com.example.Foo')
+  it('encodes $ in inner class names', () => {
+    expect(buildSourceUrl('com.example.Foo$Bar')).toBe('/api/source?fqn=com.example.Foo%24Bar')
   })
 })
 

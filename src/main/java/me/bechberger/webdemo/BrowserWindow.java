@@ -41,7 +41,7 @@ public class BrowserWindow implements Disposable {
      */
     private void startRetryLoop() {
         Thread t = new Thread(() -> {
-            while (true) {
+            while (!browser.isDisposed()) {
                 try { Thread.sleep(10); } catch (InterruptedException e) { return; }
                 String current = browser.getCefBrowser().getURL();
                 if (current != null && current.startsWith("http://localhost:")) break;
