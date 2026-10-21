@@ -6,6 +6,14 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Editor right-click → "Browse This Class" action.
+ *
+ * <p>Reads the fully-qualified name of the class at the caret (or the class named in an import
+ * statement) and broadcasts it as a filter to all connected WebSocket clients via
+ * {@link ClassBrowserServer#broadcastFilter(String)}. Only visible when the server is running
+ * and the event source is an editor.
+ */
 public class SetFilterAction extends AnAction {
 
     @Override

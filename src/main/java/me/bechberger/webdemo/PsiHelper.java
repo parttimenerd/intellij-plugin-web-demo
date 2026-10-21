@@ -11,6 +11,14 @@ import com.intellij.psi.search.searches.AllClassesSearch;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Static helpers for PSI operations used by the Class Browser.
+ *
+ * <p>All methods that read PSI data wrap their work in
+ * {@code ApplicationManager.getApplication().runReadAction(Computable)} so they are safe to call
+ * from any thread (including Javalin worker threads). Navigation dispatches to the EDT via
+ * {@code invokeLater}.
+ */
 public class PsiHelper {
 
     public record ClassInfo(String fqn, String simpleName, List<String> methods) {}

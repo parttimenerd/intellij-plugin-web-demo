@@ -12,6 +12,21 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
 
+/**
+ * Javalin HTTP/WebSocket server that backs the Class Browser tool window.
+ *
+ * <p>Registered as a project service so IntelliJ manages its lifecycle. Routes:
+ * <ul>
+ *   <li>{@code GET /api/classes?filter=} — list matching project classes with public methods</li>
+ *   <li>{@code GET /api/source?fqn=&amp;method=} — return source text and target line number</li>
+ *   <li>{@code POST /api/navigate?fqn=} — jump editor to the class</li>
+ *   <li>{@code WS /ws/filter} — receive filter strings pushed from the IDE</li>
+ *   <li>{@code GET /} — serve the Vite-built SPA from {@code classpath:/web/}</li>
+ * </ul>
+ *
+ * <p>The classloader is temporarily swapped to {@code Javalin.class.getClassLoader()} before
+ * {@code start()} to avoid SLF4J {@code NoClassDefFoundError} inside IntelliJ's plugin classloader.
+ */
 public class ClassBrowserServer implements Disposable {
 
     private static final int MAX_RESULTS = 50;

@@ -6,6 +6,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowManager;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * "Tools → Open Class Browser" action — shows the Class Browser tool window.
+ */
 public class OpenBrowserAction extends AnAction {
 
     @Override

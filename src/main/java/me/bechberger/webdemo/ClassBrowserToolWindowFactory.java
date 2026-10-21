@@ -6,6 +6,14 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Creates the "Class Browser" tool window content.
+ *
+ * <p>Retrieves the already-started {@link ClassBrowserServer} project service and opens a
+ * {@link BrowserWindow} pointed at its local port. The browser is registered against
+ * {@code toolWindow.getDisposable()} (not the project) so it is torn down when the window
+ * closes rather than when the project closes, preventing a stale CEF retry loop on reopen.
+ */
 public class ClassBrowserToolWindowFactory implements ToolWindowFactory {
 
     @Override
