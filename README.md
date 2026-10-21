@@ -19,12 +19,13 @@ into a standalone, maximally readable demo.
       │ reads class name at caret              filter ──watch──▶ GET /api/classes
       │                                        ▲                        │
       └──▶ ClassBrowserServer ──WS push───────┘              class boxes + method chips
-              │  (project service)                                      │ @click
+              │  (project service)             └── {reload:true}        │ @click
               ├── GET /api/classes  ──▶ PsiHelper.listClasses()   GET /api/source
               ├── GET /api/source   ──▶ PsiHelper.getSourceWithLine()   │
-              ├── POST /api/navigate ──▶ PsiHelper.navigate()     source pane (shiki)
-              ├── WS  /ws/filter    ──▶ web (App.vue listens, filter.value updated)
-              └── GET /             ──▶ classpath:/web/ (Vite)    POST /api/navigate
+              ├── GET /api/theme    ──▶ UIUtil.isUnderDarcula()   source pane (shiki)
+              ├── POST /api/navigate ──▶ PsiHelper.navigate()     POST /api/navigate
+              ├── WS  /ws/filter    ──▶ web (filter or reload msg)
+              └── GET /             ──▶ classpath:/web/ (Vite)
 
     BrowserWindow (JCEF — must be Java; reference impl always written in Java for this reason)
       loads http://localhost:{port}/
@@ -34,20 +35,22 @@ into a standalone, maximally readable demo.
       Javalin worker  →  PsiHelper (runReadAction — any thread safe)
       EDT only        →  navigate  (invokeLater)
       JCEF thread     →  retry loop
+      Timer thread    →  PSI change debounce → broadcastReload
 
-    IDE → web   WebSocket push   (SetFilterAction → broadcastFilter)
+    IDE → web   WebSocket push   (SetFilterAction → broadcastFilter; PSI change → broadcastReload)
     web → IDE   HTTP GET/POST    (fetch calls in App.vue)
 
 ## Files
 
 | File | Responsibility |
 |------|---------------|
-| `ClassBrowserServer.java` | Javalin server, project service, WS broadcaster |
+| `ClassBrowserServer.java` | Javalin server, project service, WS broadcaster, PSI change listener |
 | `BrowserWindow.java` | JCEF wrapper with CEF retry loop |
 | `ClassBrowserToolWindowFactory.java` | Wires server port → BrowserWindow → ToolWindow |
 | `PsiHelper.java` | All PSI: list classes+methods, source, line numbers, navigate, caret class |
 | `SetFilterAction.java` | Editor right-click → broadcast filter to frontend |
-| `App.vue` | Entire frontend: search, class boxes, source pane, WS |
+| `App.vue` | Entire frontend: search, class boxes, source pane, WS, theme |
+| `classBrowser.ts` | Pure frontend logic: URL builders, scroll calc, WS message parser (tested) |
 
 ## Running
 
@@ -57,11 +60,20 @@ into a standalone, maximally readable demo.
 
 Opens a sandbox IntelliJ. Open any Java project inside it, then:
 
-1. **View → Tool Windows → Class Browser** — browser tab opens on the right
-2. Type at least 2 characters in the search bar → classes appear
+1. **View → Tool Windows → Class Browser** — browser tab opens on the left
+2. All project classes appear immediately; type to filter by class or method name
 3. Click a method chip → source appears with the method scrolled into view
 4. Click a class name → editor jumps to the class
 5. Right-click a class name in the editor → **Browse This Class** → search bar updates
+6. The theme (light/dark) follows the IDE automatically
+
+## Frontend tests
+
+```bash
+cd frontend && npm test
+```
+
+Pure logic in `classBrowser.ts` is covered by Vitest (URL encoding, scroll math, WS message parsing).
 
 ## Dependency bundling
 
@@ -103,10 +115,13 @@ that this demo is built to avoid from day one.
 | Decision | Why |
 |----------|-----|
 | Project service, not singleton | Tied to project lifecycle; no stale `Project` reference |
-| `projectScope` not `allScope` | Avoids scanning 50k+ library classes |
-| `CopyOnWriteArraySet` for WS clients | Thread-safe add/remove from connect/close threads |
+| `projectScope` for class listing | Avoids scanning 50k+ library classes; `allScope` only for `findClass` (needs libs) |
+| `CopyOnWriteArraySet` for WS clients | Thread-safe add/remove/iterate from concurrent connect/close/error threads |
 | HTTP for web→IDE | Stateless, easy to reason about |
-| WebSocket for IDE→web | Fire-and-forget push, no polling |
+| WebSocket for IDE→web | Fire-and-forget push for both filter and reload — no polling |
+| WS reconnect on close | Server restarts (e.g. `runIde` cycle) would otherwise silently kill live reload |
+| PSI listener debounced 500 ms (server) + 300 ms (client) | PSI fires many events per keystroke; double debounce prevents broadcast storms |
+| `GET /api/theme` polled once on mount | Simple; theme rarely changes mid-session |
 | `runReadAction(Computable)` | Java needs explicit cast for the return-value overload |
 | JCEF wrapper in Java | IntelliJ bug: `JBCefBrowserBuilder` misbehaves from Kotlin |
 | `null` source if decompiled | Don't show bytecode as source |
