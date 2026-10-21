@@ -1,15 +1,7 @@
 <idea-plugin>
     <!--
-        Extensions that directly reference JBCefBrowser/JBCefBrowserBuilder live here.
-        This file is only loaded when com.intellij.modules.jcef is available, preventing
-        ClassNotFoundException on IDEs where JCEF has moved to a separate bundled plugin
-        (IntelliJ 2026.2+ / 263.x).
+        Loaded only when com.intellij.modules.jcef is available (2026.2+).
+        In 2025.2 the tool window is registered in plugin.xml because JCEF is
+        always present in the platform and com.intellij.modules.jcef doesn't exist.
     -->
-    <extensions defaultExtensionNs="com.intellij">
-        <toolWindow
-            id="Class Browser"
-            anchor="left"
-            icon="/toolwindows/webToolWindow.svg"
-            factoryClass="me.bechberger.webdemo.ClassBrowserToolWindowFactory"/>
-    </extensions>
 </idea-plugin>

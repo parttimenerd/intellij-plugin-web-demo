@@ -7,10 +7,10 @@
     <depends>com.intellij.modules.java</depends>
 
     <!--
-        JCEF moved from the platform core to a separate bundled plugin (com.intellij.modules.jcef)
-        in IntelliJ 2026.2+. Declaring it as optional prevents ClassNotFoundException on IDEs
-        where JCEF is absent or has moved. The tool window (which embeds JBCefBrowser) is in
-        jcef.xml so it is only registered when JCEF is available.
+        com.intellij.modules.jcef only exists as a separate module in 2026.2+.
+        In 2025.2 (sinceBuild=252) JCEF is always present in the platform, so the
+        tool window is registered unconditionally here. The optional dep + jcef.xml
+        is kept for forward compatibility with 2026.2+ IDEs where JCEF may be absent.
         Lesson learned from jfrplugin: https://github.com/parttimenerd/intellij-profiler-plugin
     -->
     <depends optional="true" config-file="jcef.xml">com.intellij.modules.jcef</depends>
@@ -18,6 +18,11 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectService
             serviceImplementation="me.bechberger.webdemo.ClassBrowserServer"/>
+        <toolWindow
+            id="Class Browser"
+            anchor="left"
+            icon="/toolwindows/webToolWindow.svg"
+            factoryClass="me.bechberger.webdemo.ClassBrowserToolWindowFactory"/>
     </extensions>
 
     <actions>
