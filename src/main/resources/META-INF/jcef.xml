@@ -9,6 +9,7 @@
         <toolWindow
             id="Class Browser"
             anchor="left"
+            icon="/toolwindows/webToolWindow.svg"
             factoryClass="me.bechberger.webdemo.ClassBrowserToolWindowFactory"/>
     </extensions>
 </idea-plugin>
