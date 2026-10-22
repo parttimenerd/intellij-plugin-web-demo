@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="860" viewBox="0 0 1600 860"
+     font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <filter id="shadow" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#00000020"/>
+    </filter>
+    <filter id="shadow-sm" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000014"/>
+    </filter>
+    <marker id="arr-dn" markerWidth="10" markerHeight="8" refX="5" refY="7" orient="auto">
+      <polygon points="0 0,10 0,5 8" fill="#a78bfa"/>
+    </marker>
+    <marker id="arr-dn-blue" markerWidth="10" markerHeight="8" refX="5" refY="7" orient="auto">
+      <polygon points="0 0,10 0,5 8" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-r" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <polygon points="0 0,10 4,0 8" fill="#16a34a"/>
+    </marker>
+    <marker id="arr-l" markerWidth="10" markerHeight="8" refX="1" refY="4" orient="auto">
+      <polygon points="10 0,0 4,10 8" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="860" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="800" y="50" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">Embedding a Web App — JCEF + Javalin</text>
+
+  <!-- ══════════════════════════════════════════
+       LEFT STACK — IntelliJ / JCEF
+  ══════════════════════════════════════════ -->
+  <rect x="60" y="80" width="580" height="700" rx="16" fill="#faf5ff" stroke="#d8b4fe" stroke-width="2" filter="url(#shadow)"/>
+  <text x="350" y="116" text-anchor="middle" font-size="22" font-weight="700" fill="#6d28d9">IntelliJ IDE</text>
+
+  <!-- Layer 1 -->
+  <rect x="88" y="134" width="524" height="86" rx="10" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#shadow-sm)"/>
+  <text x="350" y="168" text-anchor="middle" font-size="20" font-weight="700" fill="#4c1d95">Tool Window</text>
+  <text x="350" y="194" text-anchor="middle" font-size="15" fill="#7c3aed">plugin.xml  ·  anchor="left"  ·  icon SVG</text>
+
+  <line x1="350" y1="220" x2="350" y2="244" stroke="#a78bfa" stroke-width="2.5" marker-end="url(#arr-dn)"/>
+
+  <!-- Layer 2 -->
+  <rect x="88" y="244" width="524" height="86" rx="10" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#shadow-sm)"/>
+  <text x="350" y="278" text-anchor="middle" font-size="20" font-weight="700" fill="#4c1d95">ClassBrowserToolWindowFactory</text>
+  <text x="350" y="304" text-anchor="middle" font-size="15" fill="#7c3aed">createToolWindowContent() → get port → create BrowserWindow</text>
+
+  <line x1="350" y1="330" x2="350" y2="354" stroke="#a78bfa" stroke-width="2.5" marker-end="url(#arr-dn)"/>
+
+  <!-- Layer 3: BrowserWindow (tall, has callouts) -->
+  <rect x="88" y="354" width="524" height="160" rx="10" fill="#ddd6fe" stroke="#a78bfa" stroke-width="2" filter="url(#shadow-sm)"/>
+  <text x="350" y="388" text-anchor="middle" font-size="20" font-weight="700" fill="#3b0764">BrowserWindow.java</text>
+  <text x="350" y="412" text-anchor="middle" font-size="16" fill="#4c1d95">JCEF wrapper — must be Java, not Kotlin</text>
+  <!-- callout 1 -->
+  <rect x="98" y="424" width="240" height="44" rx="7" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="218" y="443" text-anchor="middle" font-size="14" fill="#9a3412">⚠ Kotlin bug:</text>
+  <text x="218" y="461" text-anchor="middle" font-size="14" fill="#9a3412">JBCefBrowserBuilder misbehaves</text>
+  <!-- callout 2 -->
+  <rect x="354" y="424" width="248" height="44" rx="7" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="478" y="443" text-anchor="middle" font-size="14" fill="#9a3412">⟳ retry loop:</text>
+  <text x="478" y="461" text-anchor="middle" font-size="14" fill="#9a3412">CEF drops first loadURL</text>
+
+  <line x1="350" y1="514" x2="350" y2="538" stroke="#a78bfa" stroke-width="2.5" marker-end="url(#arr-dn)"/>
+
+  <!-- Layer 4: JBCefBrowser -->
+  <rect x="88" y="538" width="524" height="80" rx="10" fill="#c4b5fd" stroke="#8b5cf6" stroke-width="2" filter="url(#shadow-sm)"/>
+  <text x="350" y="572" text-anchor="middle" font-size="20" font-weight="700" fill="#2e1065">JBCefBrowser</text>
+  <text x="350" y="598" text-anchor="middle" font-size="15" fill="#3b0764">IntelliJ Platform API  ·  com.intellij.ui.jcef</text>
+
+  <line x1="350" y1="618" x2="350" y2="642" stroke="#a78bfa" stroke-width="2.5" marker-end="url(#arr-dn)"/>
+
+  <!-- Layer 5: Chromium -->
+  <rect x="88" y="642" width="524" height="108" rx="10" fill="#7c3aed" stroke="#6d28d9" stroke-width="2" filter="url(#shadow-sm)"/>
+  <text x="350" y="684" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff">Chromium</text>
+  <text x="350" y="710" text-anchor="middle" font-size="15" fill="#ede9fe">embedded via JBR / JCEF</text>
+  <text x="350" y="732" text-anchor="middle" font-size="15" fill="#c4b5fd">Chrome DevTools on port 9222</text>
+
+
+  <!-- ══════════════════════════════════════════
+       RIGHT STACK — Server + Frontend
+  ══════════════════════════════════════════ -->
+  <rect x="960" y="80" width="580" height="700" rx="16" fill="#eff6ff" stroke="#93c5fd" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1250" y="116" text-anchor="middle" font-size="22" font-weight="700" fill="#1d4ed8">Server + Frontend</text>
+
+  <!-- Layer 1: ClassBrowserServer -->
+  <rect x="988" y="134" width="524" height="86" rx="10" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5" filter="url(#shadow-sm)"/>
+  <text x="1250" y="168" text-anchor="middle" font-size="20" font-weight="700" fill="#1e3a8a">ClassBrowserServer</text>
+  <text x="1250" y="194" text-anchor="middle" font-size="15" fill="#1d4ed8">project service  ·  Disposable  ·  Timer debounce 500ms</text>
+
+  <line x1="1250" y1="220" x2="1250" y2="244" stroke="#60a5fa" stroke-width="2.5" marker-end="url(#arr-dn-blue)"/>
+
+  <!-- Layer 2: Javalin -->
+  <rect x="988" y="244" width="524" height="120" rx="10" fill="#dbeafe" stroke="#60a5fa" stroke-width="2" filter="url(#shadow-sm)"/>
+  <text x="1250" y="278" text-anchor="middle" font-size="20" font-weight="700" fill="#1e3a8a">Javalin 6</text>
+  <text x="1250" y="302" text-anchor="middle" font-size="16" fill="#1d4ed8">HTTP + WebSocket server</text>
+  <rect x="1004" y="314" width="492" height="40" rx="7" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="1250" y="339" text-anchor="middle" font-size="14" fill="#9a3412">⚠ swap classloader before start() — avoids SLF4J NoClassDefFoundError</text>
+
+  <line x1="1250" y1="364" x2="1250" y2="388" stroke="#60a5fa" stroke-width="2.5" marker-end="url(#arr-dn-blue)"/>
+
+  <!-- Layer 3: Routes -->
+  <rect x="988" y="388" width="524" height="164" rx="10" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2" filter="url(#shadow-sm)"/>
+  <text x="1250" y="418" text-anchor="middle" font-size="20" font-weight="700" fill="#1e3a8a">Routes</text>
+  <text x="1010" y="448" font-size="16" font-family="ui-monospace,monospace" fill="#1e40af">GET  /api/classes   →  PsiHelper.listClasses()</text>
+  <text x="1010" y="474" font-size="16" font-family="ui-monospace,monospace" fill="#1e40af">GET  /api/source    →  PsiHelper.getSourceWithLine()</text>
+  <text x="1010" y="500" font-size="16" font-family="ui-monospace,monospace" fill="#1e40af">POST /api/navigate  →  PsiHelper.navigate()</text>
+  <text x="1010" y="526" font-size="16" font-family="ui-monospace,monospace" fill="#2563eb">WS   /ws/filter     →  push {filter}/{reload}</text>
+  <text x="1010" y="540" font-size="14" font-family="ui-monospace,monospace" fill="#6b7280">GET  /              →  classpath:/web/</text>
+
+  <line x1="1250" y1="552" x2="1250" y2="576" stroke="#60a5fa" stroke-width="2.5" marker-end="url(#arr-dn-blue)"/>
+
+  <!-- Layer 4: Vite build / App.vue -->
+  <rect x="988" y="576" width="524" height="174" rx="10" fill="#60a5fa" stroke="#2563eb" stroke-width="2.5" filter="url(#shadow-sm)"/>
+  <text x="1250" y="614" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">Vite Build → classpath:/web/</text>
+  <text x="1250" y="642" text-anchor="middle" font-size="16" fill="#dbeafe">App.vue  ·  classBrowser.ts  ·  shiki</text>
+  <text x="1250" y="666" text-anchor="middle" font-size="16" fill="#dbeafe">bundled into plugin JAR</text>
+  <text x="1250" y="692" text-anchor="middle" font-size="15" fill="#bfdbfe">served by Javalin static files handler</text>
+  <text x="1250" y="716" text-anchor="middle" font-size="15" fill="#bfdbfe">WS reconnects on close (2s backoff)</text>
+  <text x="1250" y="738" text-anchor="middle" font-size="14" fill="#93c5fd">java grammar only  ·  JS regex engine  ·  no wasm</text>
+
+
+  <!-- ══════════════════════════════════════════
+       CENTRE CHANNEL
+  ══════════════════════════════════════════ -->
+  <rect x="660" y="330" width="280" height="220" rx="14" fill="#f0fdf4" stroke="#4ade80" stroke-width="2.5" filter="url(#shadow)"/>
+  <text x="800" y="366" text-anchor="middle" font-size="19" font-weight="700" fill="#14532d">HTTP</text>
+  <text x="800" y="390" text-anchor="middle" font-size="15" fill="#166534">fetch()  web → IDE</text>
+
+  <line x1="680" y1="418" x2="740" y2="418" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <text x="800" y="448" text-anchor="middle" font-size="19" font-weight="700" fill="#14532d">WebSocket</text>
+  <text x="800" y="472" text-anchor="middle" font-size="15" fill="#166534">push  IDE → web</text>
+  <text x="800" y="494" text-anchor="middle" font-size="14" fill="#4ade80">{filter} / {reload:true}</text>
+  <text x="800" y="516" text-anchor="middle" font-size="14" fill="#86efac">reconnect on close</text>
+
+  <!-- HTTP arrows (fetch: web→IDE, right to left) -->
+  <line x1="984" y1="390" x2="944" y2="390" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arr-l)"/>
+  <line x1="660" y1="390" x2="620" y2="390" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arr-l)"/>
+
+  <!-- WS arrows (push: IDE→web, left to right) -->
+  <line x1="620" y1="460" x2="660" y2="460" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr-r)"/>
+  <line x1="944" y1="460" x2="984" y2="460" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr-r)"/>
+
+  <!-- BrowserWindow loads SPA arc -->
+  <path d="M 612 696 Q 800 810 988 696"
+        stroke="#a78bfa" stroke-width="2" stroke-dasharray="10,5" fill="none" marker-end="url(#arr-r)"/>
+  <text x="800" y="808" text-anchor="middle" font-size="15" fill="#7c3aed">loads http://localhost:{port}/</text>
+
+</svg>

@@ -1,0 +1,7 @@
+/Users/i560383_1/code/tooling/intellij-web-demo/test-project/src/main/java/me/bechberger/demo/Main.java
+/Users/i560383_1/code/tooling/intellij-web-demo/test-project/src/main/java/me/bechberger/demo/bus/Event.java
+/Users/i560383_1/code/tooling/intellij-web-demo/test-project/src/main/java/me/bechberger/demo/bus/EventBus.java
+/Users/i560383_1/code/tooling/intellij-web-demo/test-project/src/main/java/me/bechberger/demo/bus/EventRecorder.java
+/Users/i560383_1/code/tooling/intellij-web-demo/test-project/src/main/java/me/bechberger/demo/pipeline/Pipeline.java
+/Users/i560383_1/code/tooling/intellij-web-demo/test-project/src/main/java/me/bechberger/demo/pipeline/RingBuffer.java
+/Users/i560383_1/code/tooling/intellij-web-demo/test-project/src/main/java/me/bechberger/demo/pipeline/WordCounter.java

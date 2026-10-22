@@ -1,17 +1,27 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick } from 'vue'
-import { codeToHtml } from 'shiki'
-import { type ClassInfo, buildClassUrl, buildSourceUrl, buildNavigateUrl, scrollTopForLine, parseWsMessage } from './classBrowser'
+import { createHighlighterCore, type HighlighterCore } from 'shiki/core'
+import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
+import { type ClassInfo, buildClassUrl, buildSourceUrl, buildNavigateUrl, parseWsMessage } from './classBrowser'
+
+let highlighter: HighlighterCore | null = null
+async function getHighlighter() {
+  if (!highlighter)
+    highlighter = await createHighlighterCore({
+      langs: [import('shiki/langs/java.mjs')],
+      themes: [import('shiki/themes/github-light.mjs'), import('shiki/themes/github-dark.mjs')],
+      engine: createJavaScriptRegexEngine(),
+    })
+  return highlighter
+}
 
 const filter    = ref('')
 const classes   = ref<ClassInfo[]>([])
-const source    = ref('// click a class or method')
 const sourceEl  = ref<HTMLDivElement | null>(null)
 const theme     = ref<'github-light' | 'github-dark'>('github-light')
 
-// track current source view for reload
-let currentFqn: string | null = null
-let currentMethod: string | undefined
+// rendered HTML per fqn
+const sourceMap = ref<Map<string, string>>(new Map())
 
 // Debounced fetch on filter change
 let filterTimer: ReturnType<typeof setTimeout>
@@ -22,34 +32,44 @@ watch(filter, (val) => {
 
 async function fetchClasses(val: string) {
   const res = await fetch(buildClassUrl(val))
-  if (res.ok) classes.value = await res.json()
+  if (!res.ok) return
+  classes.value = await res.json()
+  // fetch source for every matched class in parallel
+  await Promise.all(classes.value.map(c => loadSource(c.fqn)))
 }
 
-async function showSource(fqn: string, method?: string) {
-  currentFqn = fqn
-  currentMethod = method
-  const res = await fetch(buildSourceUrl(fqn, method))
-  if (!res.ok) { source.value = '// source not available'; return }
+async function loadSource(fqn: string) {
+  const res = await fetch(buildSourceUrl(fqn))
+  if (!res.ok) return
   const data = await res.json()
-  source.value = await codeToHtml(data.source, { lang: 'java', theme: theme.value })
+  const hl = await getHighlighter()
+  const html = hl.codeToHtml(data.source, { lang: 'java', theme: theme.value })
+  sourceMap.value = new Map(sourceMap.value).set(fqn, html)
+}
+
+async function scrollToClass(fqn: string, method?: string) {
   await nextTick()
-  if (sourceEl.value)
-    sourceEl.value.scrollTop = scrollTopForLine(data.line, parseFloat(getComputedStyle(sourceEl.value).lineHeight) || 20)
+  const block = sourceEl.value?.querySelector<HTMLElement>(`[data-fqn="${CSS.escape(fqn)}"]`)
+  if (!block) return
+  if (!method) { block.scrollIntoView({ behavior: 'smooth', block: 'start' }); return }
+  // find method line within the block's <pre> text
+  const res = await fetch(buildSourceUrl(fqn, method))
+  if (!res.ok) return
+  const data = await res.json()
+  const lineHeight = parseFloat(getComputedStyle(block).lineHeight) || 20
+  sourceEl.value!.scrollTop = block.offsetTop + (data.line - 1) * lineHeight - 80
 }
 
 function navigate(fqn: string) {
   fetch(buildNavigateUrl(fqn), { method: 'POST' })
-    .then(() => showSource(fqn))
+    .then(() => scrollToClass(fqn))
 }
 
 // reload debounce — PSI fires many events per keystroke; coalesce on the frontend too
 let reloadTimer: ReturnType<typeof setTimeout>
 function scheduleReload() {
   clearTimeout(reloadTimer)
-  reloadTimer = setTimeout(() => {
-    fetchClasses(filter.value)
-    if (currentFqn) showSource(currentFqn, currentMethod)
-  }, 300)
+  reloadTimer = setTimeout(() => fetchClasses(filter.value), 300)
 }
 
 function connectWs() {
@@ -81,13 +101,20 @@ onMounted(async () => {
           <div class="package">{{ c.fqn }}</div>
           <div class="methods">
             <span v-for="m in c.methods" :key="m" class="chip"
-                  @click="showSource(c.fqn, m)">{{ m }}</span>
+                  @click="scrollToClass(c.fqn, m)">{{ m }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div ref="sourceEl" class="source" v-html="source" />
+    <div ref="sourceEl" class="source-pane">
+      <template v-for="c in classes" :key="c.fqn">
+        <div v-if="sourceMap.has(c.fqn)"
+             :data-fqn="c.fqn"
+             class="source-block"
+             v-html="sourceMap.get(c.fqn)" />
+      </template>
+    </div>
   </div>
 </template>
 
@@ -104,16 +131,17 @@ onMounted(async () => {
 .chip       { font-size: 11px; background: #f0f0f0; border-radius: 3px;
               padding: 2px 6px; cursor: pointer; }
 .chip:hover { background: #dde; }
-.source     { flex: 1; overflow: auto; padding: 0; font-size: 13px; }
-/* shiki wraps output in <pre> with inline styles — let it fill the pane */
-.source :deep(pre) { margin: 0; padding: 16px; min-height: 100%; line-height: 1.5; }
+
+.source-pane  { flex: 1; overflow-y: auto; }
+.source-block { margin-bottom: 12px; }
+.source-block :deep(pre) { margin: 0; padding: 16px; line-height: 1.5; font-size: 13px; }
 
 /* dark sidebar */
-.dark .sidebar  { background: #1e1e1e; border-right-color: #333; }
-.dark .search   { background: #1e1e1e; color: #ccc; border-bottom-color: #333; }
-.dark .class-box { border-bottom-color: #2a2a2a; }
+.dark .sidebar    { background: #1e1e1e; border-right-color: #333; }
+.dark .search     { background: #1e1e1e; color: #ccc; border-bottom-color: #333; }
+.dark .class-box  { border-bottom-color: #2a2a2a; }
 .dark .class-name { color: #6db3f2; }
-.dark .package  { color: #666; }
-.dark .chip     { background: #2d2d2d; color: #ccc; }
+.dark .package    { color: #666; }
+.dark .chip       { background: #2d2d2d; color: #ccc; }
 .dark .chip:hover { background: #3a3a5a; }
 </style>

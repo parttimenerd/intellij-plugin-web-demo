@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" font-family="sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3b6fc9"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2a7a3b"/>
+    </marker>
+  </defs>
+
+  <!-- ── IntelliJ IDE box ───────────────────────────────────────── -->
+  <rect x="10" y="10" width="410" height="490" rx="8" fill="#f8f8f8" stroke="#aaa" stroke-width="1.5"/>
+  <text x="215" y="34" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">IntelliJ IDE</text>
+
+  <!-- SetFilterAction -->
+  <rect x="30" y="48" width="200" height="54" rx="5" fill="#fff" stroke="#bbb" stroke-width="1"/>
+  <text x="130" y="68" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">SetFilterAction</text>
+  <text x="130" y="84" text-anchor="middle" font-size="10" fill="#666" font-family="monospace">right-click → class at caret</text>
+
+  <!-- PsiTreeChangeListener -->
+  <rect x="30" y="116" width="200" height="40" rx="5" fill="#fff" stroke="#bbb" stroke-width="1"/>
+  <text x="130" y="133" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">PsiTreeChangeListener</text>
+  <text x="130" y="148" text-anchor="middle" font-size="10" fill="#666" font-family="monospace">debounced 500 ms</text>
+
+  <!-- ClassBrowserServer box -->
+  <rect x="30" y="172" width="370" height="230" rx="5" fill="#eef3fb" stroke="#7fa8dd" stroke-width="1.5"/>
+  <text x="215" y="192" text-anchor="middle" font-size="12" font-weight="bold" fill="#1a3a6b">ClassBrowserServer  (project service)</text>
+
+  <!-- Routes -->
+  <text x="48" y="212" font-size="10" font-family="monospace" fill="#333">GET  /api/classes   → PsiHelper.listClasses()</text>
+  <text x="48" y="228" font-size="10" font-family="monospace" fill="#333">GET  /api/source    → PsiHelper.getSourceWithLine()</text>
+  <text x="48" y="244" font-size="10" font-family="monospace" fill="#333">GET  /api/theme     → UIUtil.isUnderDarcula()</text>
+  <text x="48" y="260" font-size="10" font-family="monospace" fill="#333">POST /api/navigate  → PsiHelper.navigate()</text>
+  <text x="48" y="276" font-size="10" font-family="monospace" fill="#333">WS   /ws/filter     → push {filter} or {reload:true}</text>
+  <text x="48" y="292" font-size="10" font-family="monospace" fill="#333">GET  /              → classpath:/web/  (Vite SPA)</text>
+
+  <!-- broadcast() -->
+  <rect x="48" y="306" width="340" height="28" rx="4" fill="#dde8f8" stroke="#7fa8dd" stroke-width="1"/>
+  <text x="218" y="324" text-anchor="middle" font-size="10" font-family="monospace" fill="#1a3a6b">broadcast()  —  CopyOnWriteArraySet&lt;WsContext&gt;</text>
+
+  <!-- Divider -->
+  <line x1="30" y1="360" x2="400" y2="360" stroke="#bbb" stroke-width="0.8" stroke-dasharray="4,3"/>
+
+  <!-- BrowserWindow -->
+  <rect x="30" y="370" width="370" height="62" rx="5" fill="#fff" stroke="#bbb" stroke-width="1"/>
+  <text x="215" y="390" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">BrowserWindow  (JCEF — Java only)</text>
+  <text x="215" y="406" text-anchor="middle" font-size="10" fill="#666" font-family="monospace">loads http://localhost:{port}/</text>
+  <text x="215" y="420" text-anchor="middle" font-size="10" fill="#888" font-family="monospace">retry loop: CEF drops first loadURL</text>
+
+  <!-- Threading note -->
+  <text x="30" y="454" font-size="9" fill="#999">Javalin worker → runReadAction   |   EDT → invokeLater (navigate)   |   Timer → broadcastReload</text>
+
+
+  <!-- ── Web Frontend box ──────────────────────────────────────── -->
+  <rect x="480" y="10" width="410" height="490" rx="8" fill="#f0f4ff" stroke="#7fa8dd" stroke-width="1.5"/>
+  <text x="685" y="34" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">Web Frontend</text>
+
+  <!-- App.vue -->
+  <rect x="500" y="48" width="370" height="280" rx="5" fill="#fff" stroke="#bbb" stroke-width="1"/>
+  <text x="685" y="68" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">App.vue</text>
+
+  <!-- filter input -->
+  <rect x="520" y="78" width="330" height="30" rx="4" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/>
+  <text x="685" y="98" text-anchor="middle" font-size="11" fill="#444">filter input  (v-model, debounced 300 ms)</text>
+
+  <!-- class list -->
+  <rect x="520" y="120" width="150" height="100" rx="4" fill="#f9f9f9" stroke="#ddd" stroke-width="1"/>
+  <text x="595" y="140" text-anchor="middle" font-size="11" font-weight="bold" fill="#444">class list</text>
+  <text x="595" y="158" text-anchor="middle" font-size="10" fill="#666">com.example.Foo</text>
+  <rect x="530" y="165" width="48" height="16" rx="3" fill="#e8e8e8"/>
+  <text x="554" y="177" text-anchor="middle" font-size="9" fill="#555" font-family="monospace">bar()</text>
+  <rect x="584" y="165" width="48" height="16" rx="3" fill="#e8e8e8"/>
+  <text x="608" y="177" text-anchor="middle" font-size="9" fill="#555" font-family="monospace">baz()</text>
+  <text x="595" y="205" text-anchor="middle" font-size="9" fill="#999">method chips</text>
+
+  <!-- source pane -->
+  <rect x="680" y="120" width="170" height="100" rx="4" fill="#f9f9f9" stroke="#ddd" stroke-width="1"/>
+  <text x="765" y="140" text-anchor="middle" font-size="11" font-weight="bold" fill="#444">source pane</text>
+  <text x="765" y="158" text-anchor="middle" font-size="10" fill="#888" font-family="monospace">shiki highlight</text>
+  <text x="765" y="174" text-anchor="middle" font-size="10" fill="#888" font-family="monospace">github-light/dark</text>
+  <text x="765" y="190" text-anchor="middle" font-size="9" fill="#999">inline styles, no CSS</text>
+
+  <!-- WS handler -->
+  <rect x="520" y="232" width="330" height="36" rx="4" fill="#eef3fb" stroke="#7fa8dd" stroke-width="1"/>
+  <text x="685" y="249" text-anchor="middle" font-size="10" font-family="monospace" fill="#1a3a6b">ws.onmessage → filter.value  |  scheduleReload()</text>
+  <text x="685" y="262" text-anchor="middle" font-size="10" fill="#666">reconnects on close (2 s backoff)</text>
+
+  <!-- fetch calls -->
+  <rect x="520" y="280" width="330" height="36" rx="4" fill="#f5fff5" stroke="#8bc48a" stroke-width="1"/>
+  <text x="685" y="296" text-anchor="middle" font-size="10" font-family="monospace" fill="#2a5a2a">fetch(/api/classes)  fetch(/api/source)</text>
+  <text x="685" y="310" text-anchor="middle" font-size="10" font-family="monospace" fill="#2a5a2a">fetch(/api/theme)    fetch(/api/navigate)</text>
+
+  <!-- classBrowser.ts -->
+  <rect x="500" y="344" width="370" height="44" rx="5" fill="#fff" stroke="#bbb" stroke-width="1"/>
+  <text x="685" y="363" text-anchor="middle" font-size="11" font-weight="bold" fill="#444">classBrowser.ts</text>
+  <text x="685" y="379" text-anchor="middle" font-size="10" fill="#666" font-family="monospace">buildClassUrl · buildSourceUrl · parseWsMessage · scrollTopForLine</text>
+
+  <!-- Vitest note -->
+  <text x="685" y="416" text-anchor="middle" font-size="10" fill="#888">17 Vitest unit tests</text>
+
+
+  <!-- ── Arrows ────────────────────────────────────────────────── -->
+
+  <!-- SetFilterAction → ClassBrowserServer (broadcastFilter) -->
+  <line x1="130" y1="102" x2="130" y2="170" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="135" y="142" font-size="9" fill="#555" font-family="monospace">broadcastFilter()</text>
+
+  <!-- PsiTreeChangeListener → ClassBrowserServer (broadcastReload) -->
+  <line x1="230" y1="156" x2="230" y2="170" stroke="#555" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="235" y="166" font-size="9" fill="#555" font-family="monospace">broadcastReload()</text>
+
+  <!-- WS push: ClassBrowserServer → App.vue (top arrow, IDE→web) -->
+  <path d="M 400 276 C 440 276 440 248 480 248" stroke="#3b6fc9" stroke-width="1.8" fill="none" marker-end="url(#arrow-blue)"/>
+  <text x="420" y="266" font-size="9" fill="#3b6fc9" font-family="monospace">WS push</text>
+  <text x="415" y="278" font-size="9" fill="#3b6fc9">{filter} / {reload}</text>
+
+  <!-- HTTP: App.vue → ClassBrowserServer (bottom arrow, web→IDE) -->
+  <path d="M 480 300 C 440 300 440 320 400 320" stroke="#2a7a3b" stroke-width="1.8" fill="none" marker-end="url(#arrow-green)"/>
+  <text x="415" y="312" font-size="9" fill="#2a7a3b" font-family="monospace">fetch()  HTTP</text>
+
+  <!-- BrowserWindow loads App.vue -->
+  <path d="M 400 401 C 440 401 440 390 480 370" stroke="#888" stroke-width="1.4" stroke-dasharray="5,3" fill="none" marker-end="url(#arrow)"/>
+  <text x="415" y="396" font-size="9" fill="#888">loads SPA</text>
+
+</svg>

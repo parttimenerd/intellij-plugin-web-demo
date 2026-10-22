@@ -12,33 +12,42 @@ into a standalone, maximally readable demo.
 
 ## Architecture
 
-    IntelliJ                              localhost:{port}
-    ────────────────────────────────────  ──────────────────────────────────
-    SetFilterAction                            App.vue (Vue 3 + TypeScript)
-    (right-click class or import)
-      │ reads class name at caret              filter ──watch──▶ GET /api/classes
-      │                                        ▲                        │
-      └──▶ ClassBrowserServer ──WS push───────┘              class boxes + method chips
-              │  (project service)             └── {reload:true}        │ @click
-              ├── GET /api/classes  ──▶ PsiHelper.listClasses()   GET /api/source
-              ├── GET /api/source   ──▶ PsiHelper.getSourceWithLine()   │
-              ├── GET /api/theme    ──▶ UIUtil.isUnderDarcula()   source pane (shiki)
-              ├── POST /api/navigate ──▶ PsiHelper.navigate()     POST /api/navigate
-              ├── WS  /ws/filter    ──▶ web (filter or reload msg)
-              └── GET /             ──▶ classpath:/web/ (Vite)
+![Architecture](docs/architecture.svg)
 
-    BrowserWindow (JCEF — must be Java; reference impl always written in Java for this reason)
-      loads http://localhost:{port}/
-      retry loop: CEF silently drops the first loadURL call
+<details>
+<summary>Text version</summary>
 
-    Threading
-      Javalin worker  →  PsiHelper (runReadAction — any thread safe)
-      EDT only        →  navigate  (invokeLater)
-      JCEF thread     →  retry loop
-      Timer thread    →  PSI change debounce → broadcastReload
+```
+IntelliJ                              localhost:{port}
+────────────────────────────────────  ──────────────────────────────────
+SetFilterAction                            App.vue (Vue 3 + TypeScript)
+(right-click class or import)
+  │ reads class name at caret              filter ──watch──▶ GET /api/classes
+  │                                        ▲                        │
+  └──▶ ClassBrowserServer ──WS push───────┘              class boxes + method chips
+          │  (project service)             └── {reload:true}        │ @click
+          ├── GET /api/classes  ──▶ PsiHelper.listClasses()   GET /api/source
+          ├── GET /api/source   ──▶ PsiHelper.getSourceWithLine()   │
+          ├── GET /api/theme    ──▶ UIUtil.isUnderDarcula()   source pane (shiki)
+          ├── POST /api/navigate ──▶ PsiHelper.navigate()     POST /api/navigate
+          ├── WS  /ws/filter    ──▶ web (filter or reload msg)
+          └── GET /             ──▶ classpath:/web/ (Vite)
 
-    IDE → web   WebSocket push   (SetFilterAction → broadcastFilter; PSI change → broadcastReload)
-    web → IDE   HTTP GET/POST    (fetch calls in App.vue)
+BrowserWindow (JCEF — must be Java; reference impl always written in Java for this reason)
+  loads http://localhost:{port}/
+  retry loop: CEF silently drops the first loadURL call
+
+Threading
+  Javalin worker  →  PsiHelper (runReadAction — any thread safe)
+  EDT only        →  navigate  (invokeLater)
+  JCEF thread     →  retry loop
+  Timer thread    →  PSI change debounce → broadcastReload
+
+IDE → web   WebSocket push   (SetFilterAction → broadcastFilter; PSI change → broadcastReload)
+web → IDE   HTTP GET/POST    (fetch calls in App.vue)
+```
+
+</details>
 
 ## Files
 
@@ -110,6 +119,67 @@ that this demo is built to avoid from day one.
 | **Transitive dep missing from JAR** | `NoClassDefFoundError` at runtime for a class from an upstream library | Add the missing dep explicitly with `implementation(...)` — don't assume transitive deps from upstream libs are always shaded |
 | **`ProjectActivity` / `startupActivity` EP silently fails** | Startup code never runs, no error thrown | Use `StartupActivity.DumbAware` with `postStartupActivity` extension point |
 
+## JCEF — Trade-offs
+
+[JBCefBrowser](https://plugins.jetbrains.com/docs/intellij/embedded-browser-jcef.html) embeds
+a full Chromium window inside an IntelliJ tool window. Use it when you need JS execution, CSS
+rendering, or a rich web UI that would be impractical to build with Swing.
+
+**Pros**
+- **Full Chromium engine** — Vue, React, shiki, Monaco, WebGL, canvas, Web Workers all work
+  out of the box; no reimplementing them in Swing
+- **CSS layout vs Swing layout managers** — Flexbox/Grid replace `GroupLayout`/`MigLayout`/
+  `GridBagLayout`. A 3-column responsive layout is ~5 lines of CSS; the Swing equivalent is
+  ~80 lines of fragile nested panels
+- **Animations and transitions** — CSS `transition`/`@keyframes` are declarative and GPU-
+  accelerated; Swing has no animation system, requiring manual `javax.swing.Timer` + repaint
+  loops for even basic effects
+- **Vast npm component ecosystem** — syntax highlighters (shiki, Monaco), data grids (AG Grid),
+  date pickers, charts — all production-ready and trivially added. Swing's ecosystem is frozen;
+  no comparable components exist
+- **Testable frontend** — Vue/React components are unit-testable with Vitest/Jest without
+  running a JVM. Swing UI tests require Fest/AssertJ-Swing and an EDT harness
+- **Browser DevTools** — Chrome DevTools on port 9222, Vue DevTools, Vite HMR (<1 s reload);
+  none of these exist for Swing
+- **Swing is no longer innovated on** — Oracle's modern UI investment moved to JavaFX (itself
+  largely abandoned for desktop); Swing receives bug fixes only. Web frameworks ship new
+  capabilities continuously. JetBrains' own platform docs acknowledge "standard Swing approach
+  is not enough" as a valid reason to reach for JCEF
+- **Async JS↔Java bridge** (`JBCefJSQuery`) for calling Java from JS and vice versa
+- Ships bundled with every JetBrains IDE that uses JBR — no extra download for end users
+
+**Cons**
+- **Not available in Android Studio** — Android Studio ships JBR without JCEF; always call
+  `JBCefApp.isSupported()` before use and provide a fallback or graceful error
+- **Kotlin initialisation bug** — `JBCefBrowserBuilder` silently misbehaves when constructed
+  from Kotlin; write the wrapper in Java (see `BrowserWindow.java`)
+- **CEF drops the first `loadURL`** — a retry/polling loop is required on first open
+- **No direct DOM access** — all JS interaction goes through async callbacks; no synchronous
+  reads from Java
+- **Headless / remote development** — JCEF requires a display; it does not work in headless
+  mode or in JetBrains Gateway remote sessions
+- **2026.2+ requires an explicit plugin dependency** — `com.intellij.modules.jcef` becomes a
+  separate optional bundled plugin; you must declare
+  `<depends optional="true" config-file="jcef.xml">com.intellij.modules.jcef</depends>`.
+  The alias only works from 2025.3.1+, so earlier IDEs need a separate plugin variant
+- **Keyboard focus complexity** — CEF manages its own focus; some keyboard shortcuts require
+  extra wiring to pass events back to the IDE
+- **Linux reliability** — JCEF has a long tail of Linux-specific bugs in `java-cef`: dropdown
+  menus don't work (#441), wrong scroll direction with OSR (#452), `onPreKeyEvent` never fired
+  (#444), GPU init failure on aarch64 (#456), init failures on KylinOS (#513) and Debian (#496)
+  due to missing native libs, drag-and-drop broken, Wayland focus regressions. Test on Linux
+  before shipping
+- **Chromium version lag** — JetBrains freezes the bundled Chromium per IDE major-version
+  branch; the active branch 262 (Oct 2025) ships Chromium 147 (~May 2025 vintage), running
+  roughly 6–12 months behind upstream. CVEs fixed in upstream Chromium are not necessarily
+  patched in JBR JCEF promptly
+
+**Alternatives**
+- Pure Swing / JavaFX `WebView` for lightweight HTML display without JS interaction
+- JavaFX WebView (`javafx-web`) if the IDE ships with JavaFX (rare in modern distributions)
+- External browser opened via `BrowserUtil.browse(url)` — simplest option when the tool
+  window itself isn't required
+
 ## Design decisions
 
 | Decision | Why |
@@ -127,3 +197,8 @@ that this demo is built to avoid from day one.
 | `null` source if decompiled | Don't show bytecode as source |
 | shiki for syntax highlighting | Self-contained HTML with inline styles — no extra CSS |
 | `com.intellij.modules.jcef` optional dep | Prevents `ClassNotFoundException` on 2026.2+ where JCEF moved |
+
+
+License
+-------
+MIT License. See [LICENSE](LICENSE) for details.

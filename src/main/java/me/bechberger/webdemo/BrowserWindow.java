@@ -9,11 +9,6 @@ import javax.swing.*;
 
 /**
  * Wraps JBCefBrowser and hosts it inside a Swing component.
- *
- * <p>Written in Java, not Kotlin — the reference implementation (WebViewWindow.java in
- * <a href="https://github.com/parttimenerd/intellij-profiler-plugin/blob/main/src/main/java/me/bechberger/jfrplugin/editor/WebViewWindow.java">
- * intellij-profiler-plugin</a>) has always been Java for this reason, noting that
- * IntelliJ JCEF integration does not work correctly from Kotlin.
  */
 public class BrowserWindow implements Disposable {
 

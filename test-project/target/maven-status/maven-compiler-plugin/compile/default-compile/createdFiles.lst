@@ -1,0 +1,7 @@
+me/bechberger/demo/pipeline/RingBuffer.class
+me/bechberger/demo/pipeline/WordCounter.class
+me/bechberger/demo/bus/Event.class
+me/bechberger/demo/bus/EventRecorder.class
+me/bechberger/demo/pipeline/Pipeline.class
+me/bechberger/demo/bus/EventBus.class
+me/bechberger/demo/Main.class

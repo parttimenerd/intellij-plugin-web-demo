@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiTreeChangeAdapter;
 import com.intellij.psi.PsiTreeChangeEvent;
+import com.intellij.util.ui.StartupUiUtil;
 import com.intellij.util.ui.UIUtil;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
@@ -46,6 +47,8 @@ public class ClassBrowserServer implements Disposable {
         this.port = freePort();
         // Javalin resolves SLF4J via the context classloader — swap to its own to avoid
         // NoClassDefFoundError inside IntelliJ's plugin classloader (mirrors Server.java in jfrtofp-server)
+
+        // <editor-fold desc="Javalin classloader swap">
         ClassLoader saved = Thread.currentThread().getContextClassLoader();
         ClassLoader javalinCl = Javalin.class.getClassLoader();
         Thread.currentThread().setContextClassLoader(javalinCl != null ? javalinCl : ClassLoader.getSystemClassLoader());
@@ -57,6 +60,7 @@ public class ClassBrowserServer implements Disposable {
         } finally {
             Thread.currentThread().setContextClassLoader(saved);
         }
+        // </editor-fold>
         PsiManager.getInstance(project).addPsiTreeChangeListener(new PsiTreeChangeAdapter() {
             @Override public void childAdded(PsiTreeChangeEvent e)    { scheduleReload(); }
             @Override public void childRemoved(PsiTreeChangeEvent e)  { scheduleReload(); }
@@ -87,7 +91,7 @@ public class ClassBrowserServer implements Disposable {
 
     private void registerRoutes() {
         app.get("/api/theme", ctx ->
-            ctx.result(UIUtil.isUnderDarcula() ? "dark" : "light")
+            ctx.result(StartupUiUtil.INSTANCE.isDarkTheme() ? "dark" : "light")
         );
 
         app.get("/api/classes", ctx -> {
