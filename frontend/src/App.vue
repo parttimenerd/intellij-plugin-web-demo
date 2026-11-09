@@ -62,7 +62,6 @@ async function scrollToClass(fqn: string, method?: string) {
 
 function navigate(fqn: string) {
   fetch(buildNavigateUrl(fqn), { method: 'POST' })
-    .then(() => scrollToClass(fqn))
 }
 
 // reload debounce — PSI fires many events per keystroke; coalesce on the frontend too

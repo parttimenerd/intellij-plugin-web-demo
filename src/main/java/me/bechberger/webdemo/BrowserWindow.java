@@ -32,15 +32,22 @@ public class BrowserWindow implements Disposable {
 
     /**
      * CEF silently drops the first loadURL call during initialisation.
-     * Poll until the URL sticks, then stop.
+     * Poll until the URL sticks, then stop. Wait 500 ms between each loadURL call so
+     * we do not interrupt an in-progress navigation (which would cause a blank source pane
+     * on initial display because the Vue onMounted fetch gets wiped by the reload).
      */
     private void startRetryLoop() {
         Thread t = new Thread(() -> {
+            long lastLoad = System.currentTimeMillis();
+            browser.getCefBrowser().loadURL(url);
             while (!browser.isDisposed()) {
-                try { Thread.sleep(10); } catch (InterruptedException e) { return; }
+                try { Thread.sleep(50); } catch (InterruptedException e) { return; }
                 String current = browser.getCefBrowser().getURL();
                 if (current != null && current.startsWith("http://localhost:")) break;
-                browser.getCefBrowser().loadURL(url);
+                if (System.currentTimeMillis() - lastLoad >= 500) {
+                    browser.getCefBrowser().loadURL(url);
+                    lastLoad = System.currentTimeMillis();
+                }
             }
         }, "browser-retry");
         t.setDaemon(true);
