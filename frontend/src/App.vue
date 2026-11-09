@@ -119,7 +119,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.layout   { display: flex; height: 100vh; font-family: monospace; }
+.layout   { display: flex; height: auto; font-family: monospace; }
 .sidebar  { width: 320px; display: flex; flex-direction: column; border-right: 1px solid #ddd; overflow: hidden; }
 .search   { padding: 8px; font-size: 13px; border: none; border-bottom: 1px solid #ddd; outline: none; }
 .class-list { overflow-y: auto; flex: 1; }
@@ -134,7 +134,7 @@ onMounted(async () => {
 
 .source-pane  { flex: 1; overflow-y: auto; }
 .source-block { margin-bottom: 12px; }
-.source-block :deep(pre) { margin: 0; padding: 16px; line-height: 1.5; font-size: 13px; }
+.source-block :deep(pre) { margin: 0; padding: 16px; line-height: 1.5; font-size: 13px; width: auto; overflow-x: auto; }
 
 /* dark sidebar */
 .dark .sidebar    { background: #1e1e1e; border-right-color: #333; }

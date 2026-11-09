@@ -9,7 +9,8 @@ import me.bechberger.demo.pipeline.RingBuffer;
 import java.util.List;
 
 /** Wires the bus and pipeline together for a quick smoke test. */
-public class Main {
+public class BusMain {
+
 
     public static void main(String[] args) {
         EventBus bus = new EventBus();
